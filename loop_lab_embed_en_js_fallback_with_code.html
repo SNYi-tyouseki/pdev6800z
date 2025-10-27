@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Loop Lab - JS fallback (with practice code)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; }
+    header { padding: 20px 16px; background: #10b981; color: white; }
+    header h1 { margin: 0 0 4px; font-size: 20px; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 18px; }
+    .card { background: white; border-radius: 14px; padding: 18px; margin: 14px 0; box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    label { display: block; font-size: 13px; color: #334155; margin-bottom: 6px; }
+    input[type="number"] { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px; }
+    button { appearance: none; border: none; background: #10b981; color: white; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    button:hover { filter: brightness(0.95); }
+    .muted { color: #64748b; font-size: 13px; }
+    pre { background: #0b1220; color: #e5e7eb; padding: 14px; border-radius: 12px; overflow: auto; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Loop Lab (JS fallback): parameters + practice code on page</h1>
+      <div class="muted">Use this if PyScript is blocked. Students edit parameters below, click Run, and compare with the reference Python code.</div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <h3>Parameters</h3>
+      <div class="grid">
+        <div><label>Task 1: start</label><input id="start" type="number" value="1"></div>
+        <div><label>Task 1: stop</label><input id="stop" type="number" value="6"></div>
+        <div><label>Task 1: step</label><input id="step" type="number" value="1"></div>
+        <div><label>Task 2: times</label><input id="times" type="number" value="3"></div>
+        <div><label>Task 3: start2</label><input id="start2" type="number" value="10"></div>
+        <div><label>Task 3: stop2</label><input id="stop2" type="number" value="0"></div>
+        <div><label>Task 3: step2</label><input id="step2" type="number" value="-2"></div>
+        <div><label>Task 4: gap</label><input id="gap" type="number" value="2"></div>
+        <div><label>Task 5: n</label><input id="n" type="number" value="5"></div>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button id="run-btn">Run</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Practice code (read-only, Python)</h3>
+      <pre class="code"><code>print("=== Task 1: range(start, stop, step) ===")
+print(list(range(start, stop, step)))
+
+print("\n=== Task 2: repeat n times ===")
+for _ in range(times):
+    print("Hello!")
+
+print("\n=== Task 3: countdown/strided counting ===")
+print(list(range(start2, stop2, step2)))
+
+print("\n=== Task 4: list + stride ===")
+words = ["alpha", "beta", "gamma", "delta", "epsilon"]
+for w in words[::gap]:
+    print(w)
+
+print("\n=== Task 5: sum of squares ===")
+total = 0
+for i in range(1, n + 1):
+    total += i ** 2
+print("sum of squares up to", n, "=", total)</code></pre>
+      <div class="muted">Tip: students only change the parameters (start/stop/step, times, start2/stop2/step2, gap, n).</div>
+    </div>
+
+    <div class="card">
+      <h3>Output</h3>
+      <pre id="out" class="code">Click "Run"…</pre>
+    </div>
+  </div>
+
+  <script>
+    const range = (start, stop, step) => {
+      if (step === 0) throw new Error("step cannot be 0");
+      const out = [];
+      if (step > 0) {
+        for (let i = start; i < stop; i += step) out.push(i);
+      } else {
+        for (let i = start; i > stop; i += step) out.push(i);
+      }
+      return out;
+    };
+
+    document.getElementById("run-btn").addEventListener("click", () => {
+      const iv = (id, d) => {
+        const v = parseInt(document.getElementById(id).value);
+        return Number.isFinite(v) ? v : d;
+      };
+      const start = iv("start", 1);
+      const stop = iv("stop", 6);
+      const step = iv("step", 1);
+      const times = iv("times", 3);
+      const start2 = iv("start2", 10);
+      const stop2 = iv("stop2", 0);
+      const step2 = iv("step2", -2);
+      const gap = Math.max(1, Math.abs(iv("gap", 2)));
+      const n = Math.max(0, iv("n", 5));
+
+      const lines = [];
+      lines.push("=== Task 1: range(start, stop, step) ===");
+      try { lines.push(JSON.stringify(range(start, stop, step))); }
+      catch (e) { lines.push("[Error] " + e.message); }
+
+      lines.push("\n=== Task 2: repeat n times ===");
+      for (let i = 0; i < Math.max(0, times); i++) lines.push("Hello!");
+
+      lines.push("\n=== Task 3: countdown/strided counting ===");
+      try { lines.push(JSON.stringify(range(start2, stop2, step2))); }
+      catch (e) { lines.push("[Error] " + e.message + " (hint: negative step for countdown)"); }
+
+      lines.push("\n=== Task 4: list + stride ===");
+      const words = ["alpha", "beta", "gamma", "delta", "epsilon"];
+      for (let i = 0; i < words.length; i += gap) lines.push(words[i]);
+
+      lines.push("\n=== Task 5: sum of squares ===");
+      let total = 0;
+      for (let i = 1; i <= n; i++) total += i * i;
+      lines.push(`sum of squares up to ${n} = ${total}`);
+
+      document.getElementById("out").textContent = lines.join("\n");
+    });
+  </script>
+</body>
+</html>

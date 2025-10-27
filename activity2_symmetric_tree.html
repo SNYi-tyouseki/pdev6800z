@@ -37,23 +37,23 @@
 
 <span class="kw">for</span> <span class="id">i</span> <span class="kw">in</span> 
 <select id="B">
+  <option value="range_1_5" selected>range(1, 5)</option>
   <option value="range_1_6">range(1, 6)</option>
   <option value="range_5">range(5)</option>
-  <option value="range_1_5" selected>range(1, 5)</option>
 </select>
 :
     <span class="id">stars</span> = 
     <select id="C">
+      <option value="mul_5" selected>"*" * 5</option>
       <option value="join_spaced">" ".join(["*"] * i)</option>
       <option value="mul_right">"*" * i</option>
-      <option value="mul_5" selected>"*" * 5</option>
       <option value="concat">"*" + i</option>
     </select>
     <span class="id">line</span> = 
     <select id="D">
+      <option value="rjust" selected>stars.rjust(width)</option>
       <option value="center">stars.center(width)</option>
       <option value="ljust">stars.ljust(width)</option>
-      <option value="rjust" selected>stars.rjust(width)</option>
       <option value="raw">stars</option>
     </select>
     <span class="fn">print</span>(<span class="id">line</span>)

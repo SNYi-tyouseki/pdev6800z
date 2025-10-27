@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Loop Activity 2 — Centered “Tree”</title>
+<style>
+  :root { --card:#ffffff; --ink:#0f172a; --muted:#475569; --accent:#2563eb; --bg:#f1f5f9; }
+  html,body{margin:0;padding:0;background:var(--bg);font:16px/1.45 ui-monospace,SFMono-Regular,Menlo,Monaco,"Cascadia Mono","Segoe UI Mono",monospace;color:var(--ink);}
+  .wrap{max-width:920px;margin:24px auto;padding:24px;}
+  .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+  .frame{background:#0b1020;color:#e5e7eb;border-radius:12px;padding:14px 16px;overflow:auto}
+  .kw{color:#93c5fd} .cm{color:#94a3b8} .id{color:#fca5a5} .fn{color:#a7f3d0}
+  select{font:inherit;border:1px solid #cbd5e1;border-radius:10px;padding:2px 6px;background:#fff}
+  .controls{display:flex;gap:12px;align-items:center;margin:10px 0 0}
+  button{border:0;border-radius:10px;padding:10px 14px;font-weight:600;background:var(--accent);color:#fff;cursor:pointer}
+  button.sec{background:#0f172a0f;color:var(--ink)}
+  .console{background:#0b1020;color:#e5e7eb;border-radius:12px;padding:18px;white-space:pre;min-height:9em;margin-top:10px}
+  .tiny{font-size:12px;color:#475569}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Loop Activity 2 — Build a Centered Star Pattern</h1>
+  <p class="tiny">Target: print 5 lines (1,2,…,5 stars). Stars are space-separated and each line is center-aligned, forming a symmetric “tree”.</p>
+
+  <div class="card">
+    <div class="frame" role="region" aria-label="Python-style code frame">
+<pre><code><span class="cm"># Choose Python expressions for blanks A–D</span>
+<span class="id">width</span> = 
+<select id="A">
+  <option value="expr_2n1" selected>2*5 - 1</option>
+  <option value="9">9</option>
+  <option value="5">5</option>
+  <option value="i">i</option>
+</select>
+
+<span class="kw">for</span> <span class="id">i</span> <span class="kw">in</span> 
+<select id="B">
+  <option value="range_1_6">range(1, 6)</option>
+  <option value="range_5">range(5)</option>
+  <option value="range_1_5" selected>range(1, 5)</option>
+</select>
+:
+    <span class="id">stars</span> = 
+    <select id="C">
+      <option value="join_spaced">" ".join(["*"] * i)</option>
+      <option value="mul_right">"*" * i</option>
+      <option value="mul_5" selected>"*" * 5</option>
+      <option value="concat">"*" + i</option>
+    </select>
+    <span class="id">line</span> = 
+    <select id="D">
+      <option value="center">stars.center(width)</option>
+      <option value="ljust">stars.ljust(width)</option>
+      <option value="rjust" selected>stars.rjust(width)</option>
+      <option value="raw">stars</option>
+    </select>
+    <span class="fn">print</span>(<span class="id">line</span>)
+</code></pre>
+    </div>
+
+    <div class="controls">
+      <button id="runBtn">Run</button>
+      <button class="sec" id="resetBtn">Reset</button>
+      <span class="tiny">Spaces are preserved (monospaced console).</span>
+    </div>
+
+    <div id="console" class="console" aria-live="polite"></div>
+  </div>
+</div>
+
+<script>
+  // --- tiny Python-like helpers ---
+  function pyCenter(s, width) {
+    const w = Math.max(0, width|0), n = s.length;
+    if (w <= n) return s;
+    const total = w - n, left = Math.floor(total/2), right = total - left;
+    return " ".repeat(left) + s + " ".repeat(right);
+  }
+  function pyLjust(s, width){ const w=width|0; return (s.length>=w)?s:s+" ".repeat(w-s.length); }
+  function pyRjust(s, width){ const w=width|0; return (s.length>=w)?s:" ".repeat(w-s.length)+s; }
+
+  function buildRange(choice){
+    switch(choice){
+      case "range_1_6": return [1,2,3,4,5];
+      case "range_5":   return [0,1,2,3,4];
+      case "range_1_5": return [1,2,3,4];
+      default: return [];
+    }
+  }
+  function computeWidth(choiceA){
+    switch(choiceA){
+      case "expr_2n1": return 9;   // 2*5-1
+      case "9": return 9;
+      case "5": return 5;
+      case "i": return 1;          // will change per line but not desired
+      default: return 9;
+    }
+  }
+  function starsFrom(choiceC, i){
+    switch(choiceC){
+      case "join_spaced": return Array.from({length:i},()=>"*").join(" ");
+      case "mul_right":   return "*".repeat(i);
+      case "mul_5":       return "*".repeat(5);
+      case "concat":      return "*" + String(i);
+      default:            return "*";
+    }
+  }
+  function justify(choiceD, s, width){
+    switch(choiceD){
+      case "center": return pyCenter(s, width);
+      case "ljust":  return pyLjust(s, width);
+      case "rjust":  return pyRjust(s, width);
+      case "raw":    return s;
+      default:       return s;
+    }
+  }
+
+  function runProgram(){
+    const A = document.getElementById("A").value;
+    const B = document.getElementById("B").value;
+    const C = document.getElementById("C").value;
+    const D = document.getElementById("D").value;
+
+    const iter = buildRange(B);
+    const width = computeWidth(A);           // fixed width = 9 for symmetry
+    const lines = iter.map(i => {
+      const stars = starsFrom(C, i);
+      return justify(D, stars, width);
+    });
+    document.getElementById("console").textContent = lines.join("\n");
+  }
+  function resetChoices(){
+    document.getElementById("A").value = "expr_2n1";
+    document.getElementById("B").value = "range_1_6";
+    document.getElementById("C").value = "join_spaced";
+    document.getElementById("D").value = "center";
+    document.getElementById("console").textContent = "";
+  }
+  document.getElementById("runBtn").addEventListener("click", runProgram);
+  document.getElementById("resetBtn").addEventListener("click", resetChoices);
+  // show the correct symmetric output on load
+  document.addEventListener("DOMContentLoaded", runProgram);
+</script>
+</body>
+</html>

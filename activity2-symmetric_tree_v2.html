@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Loop Activity 2 — Centered Star Tree (Fill‑in & Auto Check)</title>
+<style>
+  :root { --card:#ffffff; --ink:#0f172a; --muted:#475569; --accent:#2563eb; --bg:#f1f5f9; }
+  html,body{margin:0;padding:0;background:var(--bg);font:16px/1.45 ui-monospace,SFMono-Regular,Menlo,Monaco,"Cascadia Mono","Segoe UI Mono",monospace;color:var(--ink);} 
+  .wrap{max-width:960px;margin:24px auto;padding:24px;}
+  .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+  .frame{background:#0b1020;color:#e5e7eb;border-radius:12px;padding:14px 16px;overflow:auto}
+  .kw{color:#93c5fd} .cm{color:#94a3b8} .id{color:#fca5a5} .fn{color:#a7f3d0}
+  input.expr{font:inherit;border:1px solid #cbd5e1;border-radius:8px;padding:4px 8px;background:#fff;min-width:200px}
+  .controls{display:flex;gap:12px;align-items:center;margin:10px 0 0;flex-wrap:wrap}
+  button{border:0;border-radius:10px;padding:10px 14px;font-weight:600;background:var(--accent);color:#fff;cursor:pointer}
+  button.sec{background:#0f172a0f;color:var(--ink)}
+  .console{background:#0b1020;color:#e5e7eb;border-radius:12px;padding:18px;white-space:pre;min-height:10em;margin-top:10px}
+  .tiny{font-size:12px;color:#475569}
+  .err{color:#fecaca}
+  .ok{color:#bbf7d0}
+  .hint{color:#fef08a}
+  .badge{display:inline-block;padding:2px 6px;border-radius:6px;background:#0f172a12;color:#334155;font-size:12px}
+  .blank{display:inline-block;min-width:160px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Loop Activity 2 — Build a Centered Star Tree</h1>
+  <p class="tiny">Goal: print 5 lines (1,2,…,5 stars). Stars are <span class="badge">space‑separated</span>, each line is <span class="badge">centered</span>, forming a symmetric tree shape.</p>
+
+  <div class="card">
+    <div class="frame" role="region" aria-label="Python-style code frame">
+<pre><code><span class="cm"># Fill A–C with Python expressions; for D, fill the blanks inside the nested loops.</span>
+<span class="id">n</span> = 5
+<span class="id">width</span> = <input id="A" class="expr" />  <span class="cm"># A: total width</span>
+
+<span class="kw">for</span> <span class="id">i</span> <span class="kw">in</span> <input id="B" class="expr" />:  <span class="cm"># B: iterate 1..5</span>
+    <span class="cm"># C: i space-separated stars, e.g., i=3 → "* * *"</span>
+    <span class="id">stars</span> = <input id="C" class="expr" style="min-width:360px" />
+
+    <span class="cm"># D: build centered line using loops (no .center/.ljust/.rjust). For D2/D4, enter only a one-space string literal (" " or ' ').</span>
+    <span class="id">line</span> = ""
+    <span class="kw">for</span> <span class="id">_</span> <span class="kw">in</span> <span class="fn">range</span>(<input id="D1" class="expr blank" />):
+        <span class="id">line</span> <span class="kw">+=</span> <input id="D2" class="expr blank" />
+    <span class="id">line</span> <span class="kw">+=</span> <span class="id">stars</span>
+    <span class="kw">for</span> <span class="id">_</span> <span class="kw">in</span> <span class="fn">range</span>(<input id="D3" class="expr blank" />):
+        <span class="id">line</span> <span class="kw">+=</span> <input id="D4" class="expr blank" />
+
+    <span class="fn">print</span>(<span class="id">line</span>)
+</code></pre>
+    </div>
+
+    <div class="controls">
+      <button id="runBtn">Run</button>
+      <button class="sec" id="resetBtn">Reset</button>
+      <span class="tiny">Spaces are preserved (monospaced console).</span>
+    </div>
+
+    <div id="console" class="console" aria-live="polite"></div>
+    <div id="feedback" class="tiny" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<script>
+  const n = 5;
+
+  function evalArithmeticPySubset(expr, vars){
+    if (!expr || !expr.trim()) throw new Error("SyntaxError: expression is empty");
+    const allowed = /^[0-9n\s+\-*/()%]+$/;
+    if (!allowed.test(expr)) {
+      throw new Error("SyntaxError: expression contains invalid tokens (only numbers, n, + - * / % () allowed)");
+    }
+    let safe = expr.replace(/\s+/g, '');
+    if (/^[*/%]/.test(safe)) {
+      throw new Error("SyntaxError: invalid start of expression");
+    }
+    safe = safe.replace(/\bn\b/g, String(vars.n));
+    safe = safe.replace(/([0-9()]+)\/\/([0-9()]+)/g, 'Math.floor(($1)/($2))');
+    const val = Function('return ('+safe+')')();
+    if (!Number.isFinite(val)) throw new Error("ZeroDivisionError: division by zero");
+    return Math.trunc(val);
+  }
+
+  function parseRange(expr){
+    if (!expr || !expr.trim()) throw new Error("SyntaxError: expression is empty");
+    const s = expr.replace(/\s+/g,'');
+    const m = s.match(/^range\(([-]?\d+),([-]?\d+)(?:,([-]?\d+))?\)$/);
+    if (!m) throw new Error("SyntaxError: expected range(start, stop[, step])");
+    let [_, a, b, c] = m; a=+a; b=+b; let step = c==null?1:+c; if (step===0) throw new Error("ValueError: range() arg 3 must not be zero");
+    const out=[]; if (step>0){ for(let x=a; x<b; x+=step) out.push(x);} else { for(let x=a; x>b; x+=step) out.push(x);} 
+    return out;
+  }
+
+  function isSpacedStarsExpr(expr){
+    const t = (expr||'').trim();
+    if (!t) throw new Error('SyntaxError: expression is empty');
+    // Accept: " ".join(["*"] * i)  or  ' '.join(['*'] * i)
+    const re = /^(['"]) \1\.join\(\[\s*(['"])\*\2\s*\]\s*\*\s*i\s*\)$/;
+    return re.test(t);
+  }
+
+  function validateD(d1, d2, d3, d4){
+    function nonEmpty(x, name){ if (!x || x.trim()==='') throw new Error(`SyntaxError: ${name} is empty`); }
+    nonEmpty(d1, 'left range'); nonEmpty(d2, 'left body'); nonEmpty(d3, 'right range'); nonEmpty(d4, 'right body');
+
+    const rLeft = /^\(\s*width\s*-\s*len\(\s*stars\s*\)\s*\)\s*\/\/\s*2$/;
+    if (!rLeft.test(d1.trim())){
+      if (/^\(.*\)$/.test(d1.trim()) && d1.includes('/2') && !d1.includes('//')){
+        throw new Error("SyntaxError: use integer division '//' instead of '/' for halving the left padding");
+      }
+      throw new Error("SyntaxError: expected (width - len(stars)) // 2 in the left range");
+    }
+
+    const bodySpace = /^(" "|' ')$/; // only the string literal; scaffold already has 'line +='
+    if (!bodySpace.test(d2.trim())){
+      if (/^\"\"$/.test(d2.trim())){
+        throw new Error("AssertionError: must append one space, not an empty string");
+      }
+      if (/^line\s*\+=/.test(d2.trim())){
+        throw new Error("TypeError: left body should be just the string literal: \" \"");
+      }
+      throw new Error("TypeError: left body should be just a one-space string: \" \"");
+    }
+
+    const rRight = /^width\s*-\s*len\(\s*line\s*\)$/;
+    if (!rRight.test(d3.trim())){
+      throw new Error("SyntaxError: expected width - len(line) in the right range");
+    }
+
+    if (!bodySpace.test(d4.trim())){
+      if (/^line\s*\+=/.test(d4.trim())){
+        throw new Error("TypeError: right body should be just the string literal: \" \"");
+      }
+      throw new Error("TypeError: right body should be just a one-space string: \" \"");
+    }
+  }
+
+  function buildExpectedTree(width){
+    const lines = [];
+    for (let i=1;i<=5;i++){
+      let stars = '';
+      for (let j=0;j<i;j++){
+        stars += '*';
+        if (j < i-1) stars += ' ';
+      }
+      const pad = Math.max(0, width - stars.length);
+      const left = Math.floor(pad/2), right = pad - left;
+      let line = ' '.repeat(left) + stars + ' '.repeat(right);
+      lines.push(line);
+    }
+    return lines;
+  }
+
+  function validateAndRun(){
+    const consoleEl = document.getElementById('console');
+    const feedbackEl = document.getElementById('feedback');
+    consoleEl.textContent = '';
+    feedbackEl.textContent = '';
+    try {
+      const A = document.getElementById('A').value;
+      const B = document.getElementById('B').value;
+      const C = document.getElementById('C').value;
+      const D1 = document.getElementById('D1').value;
+      const D2 = document.getElementById('D2').value;
+      const D3 = document.getElementById('D3').value;
+      const D4 = document.getElementById('D4').value;
+
+      if (/\bi\b/.test(A)) throw new Error("NameError: width must not depend on variable 'i'");
+      const width = evalArithmeticPySubset(A, {n});
+      const expectWidth = 2*n - 1;
+      if (width !== expectWidth) throw new Error(`AssertionError: width should be 2*n-1 for n=${n} (expected ${expectWidth}, got ${width})`);
+
+      const iter = parseRange(B);
+      const expectIter = [1,2,3,4,5];
+      if (JSON.stringify(iter) !== JSON.stringify(expectIter)){
+        throw new Error(`ValueError: iteration should be range(1, 6) to produce 5 lines (got ${JSON.stringify(iter)})`);
+      }
+
+      if (!isSpacedStarsExpr(C)){
+        const compact = (C||'').replace(/\s+/g,'');
+        if (/^("|')\*(\1)\*i$/.test(compact)){
+          throw new Error("FormatError: stars must be space-separated like '* * *', not '***'. Try \" \".join(['*'] * i)");
+        }
+        if (/^("|')\*(\1)\+i$/.test(compact)){
+          throw new Error("TypeError: can only concatenate str (not 'int') to str");
+        }
+        throw new Error("SyntaxError: expected \" \".join([\"*\"] * i)");
+      }
+
+      validateD(D1,D2,D3,D4);
+
+      const lines = buildExpectedTree(expectWidth);
+      consoleEl.textContent = lines.join('\n');
+      feedbackEl.innerHTML = '<span class="ok">✓ All correct! Your loop-based centering produced the expected tree.</span>';
+    } catch (e){
+      consoleEl.innerHTML = '<span class="err">' + e.message + '</span>';
+      feedbackEl.innerHTML = '<span class="hint">Hint: D1=(width - len(stars)) // 2, D2=" ", D3=width - len(line), D4=" ".</span>';
+    }
+  }
+
+  function resetAll(){
+    ['A','B','C','D1','D2','D3','D4'].forEach(id=>{ const el=document.getElementById(id); if (el) el.value='';});
+    document.getElementById('console').textContent = '';
+    document.getElementById('feedback').textContent = '';
+  }
+
+  document.getElementById('runBtn').addEventListener('click', validateAndRun);
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
+</script>
+</body>
+</html>
